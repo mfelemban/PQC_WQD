@@ -278,9 +278,9 @@ def fig_circuit(t1, t2, t3):
                            fillcolor="#1565C0", opacity=0.88,
                            line=dict(color="white", width=1.5)))
         annots.append(dict(x=xG, y=y,
-                           text=f"<b>RY</b><br><span style='font-size:10px'>"
+                           text=f"<b>RY</b><br><span style='font-size:8px'>"
                                 f"{lbl} = {t:.2f}</span>",
-                           showarrow=False, font=dict(size=11, color="white"),
+                           showarrow=False, font=dict(size=9, color="white"),
                            align="center"))
 
     # Draw a CNOT gate (control dot + ⊕ target)
