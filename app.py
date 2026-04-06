@@ -393,6 +393,80 @@ def fig_loss_1d_animated():
     return fig
 
 
+def fig_progress_1d(fidelity_score):
+    """
+    Slide 3 companion: show the student's current position on the same 1D
+    loss curve from Slide 2.  Fidelity 0 → far right (high loss);
+    fidelity 1 → global minimum ⭐.  Not physically exact — purely illustrative.
+    """
+    xs, ys, _, _ = _precompute_1d()
+    x_gmin = float(xs[np.argmin(ys)])
+    x_start = 9.0
+
+    # Linear interpolation: low fidelity = far right, high = at global min
+    x_dot = x_start + fidelity_score * (x_gmin - x_start)
+    y_dot = float(_loss_1d(x_dot))
+
+    dot_color = ("#C62828" if fidelity_score < 0.4 else
+                 "#FB8C00" if fidelity_score < 0.75 else
+                 "#2E7D32" if fidelity_score < 0.98 else
+                 "#FFD600")
+
+    fig = go.Figure()
+
+    # Loss curve (filled)
+    fig.add_trace(go.Scatter(
+        x=xs, y=ys, mode="lines",
+        fill="tozeroy", fillcolor="rgba(21,101,192,0.08)",
+        line=dict(color="#1565C0", width=2),
+        showlegend=False, hoverinfo="skip",
+    ))
+
+    # Global minimum star
+    fig.add_trace(go.Scatter(
+        x=[x_gmin], y=[float(np.min(ys))],
+        mode="markers+text",
+        marker=dict(size=18, color="#FFD600", symbol="star",
+                    line=dict(color="#555", width=1.5)),
+        text=["  ⭐ Goal"], textposition="middle right",
+        showlegend=False, hoverinfo="skip",
+    ))
+
+    # Student's dot
+    fig.add_trace(go.Scatter(
+        x=[x_dot], y=[y_dot], mode="markers+text",
+        marker=dict(size=18, color=dot_color, symbol="circle",
+                    line=dict(color="white", width=2.5)),
+        text=[f"  You ({fidelity_score*100:.0f}%)"],
+        textposition="top right",
+        textfont=dict(size=11, color=dot_color),
+        showlegend=False,
+        hovertemplate=f"Fidelity {fidelity_score*100:.1f}%<br>Loss ≈ {y_dot:.3f}<extra></extra>",
+    ))
+
+    # Dashed arrow from dot toward global min (only when not yet at goal)
+    if fidelity_score < 0.97:
+        fig.add_annotation(
+            x=x_gmin + 0.4, y=float(np.min(ys)),
+            ax=x_dot, ay=y_dot,
+            xref="x", yref="y", axref="x", ayref="y",
+            showarrow=True, arrowhead=2, arrowsize=1.2,
+            arrowwidth=1.5, arrowcolor="#aaa",
+        )
+
+    fig.update_layout(
+        height=215,
+        margin=dict(l=50, r=20, t=35, b=35),
+        xaxis=dict(title="θ", range=[-0.3, 10.3],
+                   showgrid=True, gridcolor="#eee", zeroline=False),
+        yaxis=dict(title="Loss", range=[-0.05, 1.1],
+                   showgrid=True, gridcolor="#eee", zeroline=False),
+        title="📍 Your position on the loss landscape (from Slide 2)",
+        paper_bgcolor="white", plot_bgcolor="white",
+    )
+    return fig
+
+
 def fig_waveform(A, B, C):
     """
     Slide 3 waveform: target vs student's current quantum state.
@@ -747,6 +821,8 @@ def slide3():
 
     with right:
         st.plotly_chart(fig_waveform(A, B, C), use_container_width=True)
+
+        st.plotly_chart(fig_progress_1d(fid), use_container_width=True)
 
         st.markdown("**Your Circuit** *(parameterized by Angle A, B, C)*")
         pqc_fig3 = draw_pqc(A, B, C)
