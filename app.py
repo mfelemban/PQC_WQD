@@ -231,7 +231,7 @@ def draw_pqc(A, B, C):
     """
     try:
         circuit = _build_pqc()
-        fig, ax = qml.draw_mpl(circuit, style="pennylane", decimals=2)(np.array([A, B, C]))
+        fig, ax = qml.draw_mpl(circuit, style="sketch", decimals=2)(np.array([A, B, C]))
         # Apply dark theme to every axes object returned
         axes = ax if hasattr(ax, "__iter__") else [ax]
         fig.patch.set_facecolor(_BG)
