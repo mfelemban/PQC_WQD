@@ -1,7 +1,8 @@
 """
 PQC Interactive Demo — Three-Slide Educational Experience
 =========================================================
-Pure numpy quantum math (no PennyLane) for instant interactivity.
+Quantum math: pure numpy (instant interactivity).
+Circuit visualization: PennyLane draw_mpl (Slides 1 & 3).
 Slide 1: The Magic Recipe with Knobs
 Slide 2: The Training Loop — animated loss landscape
 Slide 3: You Are the Optimizer — match the waveform
@@ -10,6 +11,10 @@ import warnings; warnings.filterwarnings("ignore")
 import numpy as np
 import streamlit as st
 import plotly.graph_objects as go
+import pennylane as qml
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
 
 # ─────────────────────────────────────────────────────────────────────────────
 #  PAGE CONFIG & GLOBAL STYLES
@@ -125,6 +130,41 @@ _C_TARGET = 2 * np.pi / 3     # ≈ 2.094 rad
 _PSI_TARGET = psi3(_A_TARGET, _B_TARGET, _C_TARGET)
 _BASIS = [f"|{format(i, '03b')}⟩" for i in range(8)]
 _CIRC  = np.linspace(0, 2 * np.pi, 60)    # for drawing circles
+
+# ── PennyLane circuit (visualization only — quantum math stays in numpy) ──────
+
+@st.cache_resource(show_spinner=False)
+def _build_pqc():
+    """Build and cache the PennyLane QNode matching the numpy circuit."""
+    dev = qml.device("default.qubit", wires=3)
+
+    @qml.qnode(dev)
+    def circuit(params):
+        qml.RY(params[0], wires=0)
+        qml.RY(params[1], wires=1)
+        qml.RY(params[2], wires=2)
+        qml.CNOT(wires=[0, 1])
+        qml.CNOT(wires=[1, 2])
+        return qml.state()
+
+    return circuit
+
+
+def draw_pqc(A, B, C):
+    """
+    Return a matplotlib figure of the PQC using qml.draw_mpl.
+    Falls back to None on error so callers can degrade gracefully.
+    """
+    try:
+        circuit = _build_pqc()
+        fig, _ = qml.draw_mpl(circuit, style="pennylane", decimals=2)(
+            np.array([A, B, C])
+        )
+        fig.set_size_inches(7, 2.4)
+        fig.tight_layout()
+        return fig
+    except Exception:
+        return None
 
 # ─────────────────────────────────────────────────────────────────────────────
 #  PLOTLY FIGURE BUILDERS
@@ -511,7 +551,12 @@ def slide1():
         t3 = kc3.slider("θ₃  (Knob 3)", 0.0, float(2 * np.pi),
                          float(np.pi / 2), step=0.05, format="%.2f", key="s1_t3")
 
-        st.plotly_chart(fig_circuit(t1, t2, t3), use_container_width=True)
+        pqc_fig = draw_pqc(t1, t2, t3)
+        if pqc_fig is not None:
+            st.pyplot(pqc_fig, use_container_width=True)
+            plt.close(pqc_fig)
+        else:
+            st.plotly_chart(fig_circuit(t1, t2, t3), use_container_width=True)
         st.plotly_chart(fig_probs(psi3(t1, t2, t3)), use_container_width=True)
 
         st.caption(
@@ -700,6 +745,12 @@ def slide3():
 
     with right:
         st.plotly_chart(fig_waveform(A, B, C), use_container_width=True)
+
+        st.markdown("**Your Circuit** *(parameterized by Angle A, B, C)*")
+        pqc_fig3 = draw_pqc(A, B, C)
+        if pqc_fig3 is not None:
+            st.pyplot(pqc_fig3, use_container_width=True)
+            plt.close(pqc_fig3)
 
         with st.expander("🔬 Advanced: complex amplitudes & target angles"):
             curr = psi3(A, B, C)
