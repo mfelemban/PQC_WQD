@@ -28,35 +28,106 @@ st.set_page_config(
 
 st.markdown("""
 <style>
-  .block-container { padding: 0.5rem 2rem 1rem; max-width: 1400px; }
+  @import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;600;700&display=swap');
+
+  /* ── Dark quantum background ── */
+  .stApp, [data-testid="stAppViewContainer"] {
+      background-color: #061828 !important;
+      background-image:
+          linear-gradient(rgba(0,212,232,0.035) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(0,212,232,0.035) 1px, transparent 1px);
+      background-size: 48px 48px;
+      font-family: 'Exo 2', sans-serif !important;
+  }
+  [data-testid="stMain"], section.main { background: transparent !important; }
+
+  /* ── Compact viewport-fit layout ── */
+  .block-container {
+      padding: 0.3rem 1.5rem 0.2rem !important;
+      max-width: 100% !important;
+      overflow: hidden;
+  }
   #MainMenu, header, footer { visibility: hidden; }
 
-  /* Slide header */
-  .shdr { text-align: center; margin-bottom: 0.8rem; }
-  .shdr h1 { font-size: 2.0rem; font-weight: 800; color: #1565C0; margin: 0; }
-  .shdr .sub { font-size: 1.0rem; color: #555; margin-top: 0.2rem; }
+  /* ── Global text ── */
+  html, body, p, li, label, span, div { color: #e0f4f8 !important; }
 
-  /* Info cards */
-  .card { border-radius: 10px; padding: 0.7rem 1rem; margin-bottom: 0.5rem; }
-  .cb { background: #e8f0fe; border-left: 4px solid #1565C0; }
-  .co { background: #fff3e0; border-left: 4px solid #FB8C00; }
-  .cg { background: #e8f5e9; border-left: 4px solid #2E7D32; }
-  .cr { background: #fce4ec; border-left: 4px solid #C62828; }
+  /* ── Slide header ── */
+  .shdr { text-align: center; margin-bottom: 0.4rem; }
+  .shdr h1 {
+      font-size: 1.55rem; font-weight: 700; margin: 0;
+      color: #00d4e8 !important;
+      text-shadow: 0 0 18px rgba(0,212,232,0.45);
+  }
+  .shdr .sub { font-size: 0.85rem; color: #80c8d8 !important; margin-top: 0.1rem; }
 
-  /* Step badge */
-  .bdg { display: inline-block; background: #1565C0; color: white;
-         border-radius: 50%; width: 24px; height: 24px; text-align: center;
-         line-height: 24px; font-weight: 700; font-size: .85rem; margin-right: 6px; }
+  /* ── Info cards ── */
+  .card { border-radius: 8px; padding: 0.5rem 0.8rem; margin-bottom: 0.38rem; }
+  .cb { background: rgba(0,212,232,0.09);  border-left: 4px solid #00d4e8; }
+  .co { background: rgba(255,180,0,0.09);  border-left: 4px solid #ffb400; }
+  .cg { background: rgba(0,220,130,0.09);  border-left: 4px solid #00dc82; }
+  .cr { background: rgba(255,80,100,0.09); border-left: 4px solid #ff5064; }
 
-  /* Match meter */
-  .meter { border-radius: 12px; padding: 0.8rem 1.2rem; margin-bottom: 0.8rem; }
+  /* ── Step badge ── */
+  .bdg { display: inline-block; background: #00d4e8; color: #061828;
+         border-radius: 50%; width: 22px; height: 22px; text-align: center;
+         line-height: 22px; font-weight: 700; font-size: .78rem; margin-right: 6px; }
 
-  /* Win banner */
-  .win { background: linear-gradient(135deg, #1565C0, #2E7D32); color: white;
-         border-radius: 12px; padding: 1.2rem 1.5rem; text-align: center;
-         font-size: 1.05rem; margin-bottom: 0.8rem; }
+  /* ── Match meter ── */
+  .meter { border-radius: 10px; padding: 0.55rem 1rem; margin-bottom: 0.5rem; }
+
+  /* ── Win banner ── */
+  .win { background: linear-gradient(135deg, #003d5c, #006644);
+         border: 1px solid #00d4e8; color: #e0f4f8 !important;
+         border-radius: 10px; padding: 0.7rem 1.2rem; text-align: center;
+         font-size: 0.92rem; margin-bottom: 0.55rem; }
+
+  /* ── Navigation arrows ── */
+  [data-testid="stButton"] > button {
+      background: rgba(0,212,232,0.08) !important;
+      border: 1.5px solid rgba(0,212,232,0.5) !important;
+      color: #00d4e8 !important;
+      border-radius: 50% !important;
+      padding: 0 !important;
+      width: 46px !important; height: 46px !important;
+      font-size: 1.3rem !important; font-weight: 700 !important;
+      line-height: 44px !important;
+      transition: all 0.2s ease !important;
+  }
+  [data-testid="stButton"] > button:hover {
+      background: rgba(0,212,232,0.22) !important;
+      border-color: #00d4e8 !important;
+      box-shadow: 0 0 12px rgba(0,212,232,0.4) !important;
+  }
+
+  /* ── Sliders, selects ── */
+  [data-baseweb="slider"] [data-testid="stThumb"] { background: #00d4e8 !important; }
+  [data-testid="stSlider"] label, [data-testid="stSelectbox"] label { color: #80c8d8 !important; }
+
+  /* ── Expander ── */
+  [data-testid="stExpander"] {
+      background: rgba(0,212,232,0.05) !important;
+      border: 1px solid rgba(0,212,232,0.18) !important;
+      border-radius: 8px;
+  }
+  [data-testid="stExpander"] summary { color: #00d4e8 !important; }
+
+  /* ── Dividers / captions ── */
+  hr { border-color: rgba(0,212,232,0.18) !important; margin: 0.3rem 0 !important; }
+  [data-testid="stCaptionContainer"] { color: #5090a0 !important; font-size: 0.75rem !important; }
+  h1, h2, h3 { color: #00d4e8 !important; }
+  b, strong { color: #b0e8f0 !important; }
 </style>
 """, unsafe_allow_html=True)
+
+# Dark palette constants reused in every Plotly figure
+_BG   = "#061828"   # paper / page background
+_BG2  = "#0a2035"   # plot area background
+_CYAN = "#00d4e8"   # primary accent
+_TEXT = "#e0f4f8"   # axis labels / text
+_GRID = "rgba(0,212,232,0.12)"  # grid lines
+_DARK = dict(paper_bgcolor=_BG, plot_bgcolor=_BG2,
+             font=dict(color=_TEXT, size=11))
 
 # ─────────────────────────────────────────────────────────────────────────────
 #  QUANTUM MATH  (numpy only — no PennyLane needed, everything is instant)
@@ -160,10 +231,13 @@ def draw_pqc(A, B, C):
     """
     try:
         circuit = _build_pqc()
-        fig, _ = qml.draw_mpl(circuit, style="pennylane", decimals=2)(
+        fig, ax = qml.draw_mpl(circuit, style="black_white", decimals=2)(
             np.array([A, B, C])
         )
-        fig.set_size_inches(7, 2.4)
+        fig.patch.set_facecolor(_BG)
+        for a in (ax if hasattr(ax, "__iter__") else [ax]):
+            a.set_facecolor(_BG2)
+        fig.set_size_inches(7, 1.8)
         fig.tight_layout()
         return fig
     except Exception:
@@ -241,8 +315,8 @@ def fig_circuit(t1, t2, t3):
     fig = go.Figure(traces)
     fig.update_layout(
         shapes=shapes, annotations=annots,
-        height=200, margin=dict(l=10, r=10, t=28, b=10),
-        paper_bgcolor="white", plot_bgcolor="white",
+        height=185, margin=dict(l=10, r=10, t=24, b=8),
+        paper_bgcolor=_BG, plot_bgcolor=_BG2,
         xaxis=dict(range=[-0.2, 6.3], showgrid=False, zeroline=False,
                    showticklabels=False),
         yaxis=dict(range=[-0.65, 3.1], showgrid=False, zeroline=False,
@@ -263,11 +337,11 @@ def fig_probs(state, title="Probability of measuring each basis state"):
         hovertemplate="%{x}: %{y:.3f}<extra></extra>",
     ))
     fig.update_layout(
-        title=title, height=195,
-        margin=dict(l=20, r=10, t=32, b=30),
-        yaxis=dict(range=[0, 1.05], title="P"),
-        xaxis_title="Basis state",
-        template="plotly_white",
+        title=title, height=165,
+        margin=dict(l=20, r=10, t=28, b=28),
+        yaxis=dict(range=[0, 1.05], title="P", gridcolor=_GRID, zerolinecolor=_GRID),
+        xaxis=dict(title="Basis state", gridcolor=_GRID),
+        **_DARK,
     )
     return fig
 
@@ -352,14 +426,16 @@ def fig_loss_1d_animated():
     )
 
     fig.update_layout(
-        height=420,
-        margin=dict(l=60, r=30, t=75, b=70),
+        height=370,
+        margin=dict(l=60, r=30, t=70, b=65),
         xaxis=dict(title="θ  (Parameter — your knob setting)",
-                   range=[-0.3, 10.3], showgrid=True, gridcolor="#eee"),
+                   range=[-0.3, 10.3], showgrid=True, gridcolor=_GRID,
+                   zerolinecolor=_GRID),
         yaxis=dict(title="Loss  (lower = better)",
-                   range=[-0.05, 1.15], showgrid=True, gridcolor="#eee"),
+                   range=[-0.05, 1.15], showgrid=True, gridcolor=_GRID,
+                   zerolinecolor=_GRID),
         title="Loss Landscape — the optimizer rolls downhill, but where does it end up?",
-        paper_bgcolor="white", plot_bgcolor="white",
+        **_DARK,
         legend=dict(orientation="h", y=1.13, x=0.5, xanchor="center"),
         updatemenus=[dict(
             type="buttons", showactive=False,
@@ -455,14 +531,14 @@ def fig_progress_1d(fidelity_score):
         )
 
     fig.update_layout(
-        height=260,
-        margin=dict(l=50, r=20, t=35, b=35),
+        height=210,
+        margin=dict(l=50, r=20, t=32, b=32),
         xaxis=dict(title="θ", range=[-0.3, 10.3],
-                   showgrid=True, gridcolor="#eee", zeroline=False),
+                   showgrid=True, gridcolor=_GRID, zeroline=False),
         yaxis=dict(title="Loss", range=[-0.05, 1.1],
-                   showgrid=True, gridcolor="#eee", zeroline=False),
+                   showgrid=True, gridcolor=_GRID, zeroline=False),
         title="📍 Your position on the loss landscape (from Slide 2)",
-        paper_bgcolor="white", plot_bgcolor="white",
+        **_DARK,
     )
     return fig
 
@@ -501,13 +577,14 @@ def fig_waveform(A, B, C):
     ))
 
     fig.update_layout(
-        height=260,
-        margin=dict(l=30, r=20, t=45, b=35),
-        yaxis=dict(range=[0, 1.05], title="Probability"),
-        xaxis_title="Basis State",
-        legend=dict(orientation="h", y=1.16, x=0.5, xanchor="center"),
-        template="plotly_white",
-        title="Match Your Wave to the Target!  (Orange = Target, Blue = Yours)",
+        height=210,
+        margin=dict(l=30, r=20, t=40, b=30),
+        yaxis=dict(range=[0, 1.05], title="Probability",
+                   gridcolor=_GRID, zerolinecolor=_GRID),
+        xaxis=dict(title="Basis State", gridcolor=_GRID),
+        legend=dict(orientation="h", y=1.18, x=0.5, xanchor="center"),
+        title="Match Your Wave to the Target!",
+        **_DARK,
     )
     return fig
 
@@ -528,39 +605,48 @@ _TITLES = [
 ]
 
 
-def _nav(key_suffix="top"):
+def _nav():
     sl = st.session_state["slide"]
-    c_prev, c_mid, c_next = st.columns([1, 6, 1])
+    c_prev, c_mid, c_next = st.columns([0.06, 0.88, 0.06])
 
     with c_prev:
         if sl > 0:
-            if st.button("← Back", key=f"prev_{key_suffix}", use_container_width=True):
+            if st.button("◀", key="nav_prev", use_container_width=True):
                 st.session_state["slide"] -= 1
                 st.rerun()
 
     with c_mid:
         dots = ""
         for i, title in enumerate(_TITLES):
-            col = "#1565C0" if i == sl else "#bbb"
-            wt  = "800"    if i == sl else "400"
-            dots += (f'<span style="color:{col};font-size:1.2rem;font-weight:{wt};">'
-                     f'● {title}</span>')
+            active = i == sl
+            col = _CYAN if active else "#2a5060"
+            wt  = "700"  if active else "400"
+            glow = f"text-shadow:0 0 10px {_CYAN};" if active else ""
+            dots += (f'<span style="color:{col};font-size:1.05rem;font-weight:{wt};'
+                     f'{glow}margin:0 4px;">● {title}</span>')
             if i < 2:
-                dots += '<span style="color:#ddd;"> &nbsp;→&nbsp; </span>'
-        st.markdown(f'<div style="text-align:center;padding:0.15rem 0;">{dots}</div>',
-                    unsafe_allow_html=True)
+                dots += f'<span style="color:#1a4050;font-size:0.9rem;"> → </span>'
+        st.markdown(
+            f'<div style="text-align:center;padding:0.1rem 0;">{dots}</div>',
+            unsafe_allow_html=True,
+        )
 
     with c_next:
         if sl < 2:
-            if st.button("Next →", key=f"next_{key_suffix}",
-                         use_container_width=True, type="primary"):
+            if st.button("▶", key="nav_next", use_container_width=True):
                 st.session_state["slide"] += 1
                 st.rerun()
-        elif key_suffix == "top":
-            st.markdown('<div style="text-align:right;color:#2E7D32;padding-top:0.4rem;">'
-                        '🎓 Complete!</div>', unsafe_allow_html=True)
+        else:
+            st.markdown(
+                f'<div style="text-align:center;color:{_CYAN};font-size:1.1rem;'
+                f'padding-top:0.2rem;">✓</div>',
+                unsafe_allow_html=True,
+            )
 
-    st.divider()
+    st.markdown(
+        f'<hr style="border:none;border-top:1px solid rgba(0,212,232,0.2);margin:0.2rem 0 0.3rem;">',
+        unsafe_allow_html=True,
+    )
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -842,10 +928,10 @@ def slide3():
                 x=_BASIS, y=curr.real,
                 name="Yours  Re(ψ)", marker_color="#1565C0", opacity=0.85))
             fig_adv.update_layout(
-                barmode="overlay", height=195,
-                margin=dict(l=20, r=10, t=15, b=30),
+                barmode="overlay", height=175,
+                margin=dict(l=20, r=10, t=15, b=25),
                 legend=dict(orientation="h", y=1.1),
-                template="plotly_white",
+                **_DARK,
             )
             st.plotly_chart(fig_adv, use_container_width=True)
             st.markdown(
@@ -860,10 +946,7 @@ def slide3():
 #  MAIN
 # ─────────────────────────────────────────────────────────────────────────────
 
-_nav("top")
+_nav()
 
 {0: slide1, 1: slide2, 2: slide3}[st.session_state["slide"]]()
 
-# Bottom navigation mirrors the top
-st.divider()
-_nav("bot")
