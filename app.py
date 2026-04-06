@@ -231,19 +231,15 @@ def draw_pqc(A, B, C):
     """
     try:
         circuit = _build_pqc()
-        fig, ax = qml.draw_mpl(circuit, style="sketch", decimals=2)(np.array([A, B, C]))
-        # Apply dark theme to every axes object returned
+        # Use PennyLane's standard palette and keep labels readable with dark text.
+        fig, ax = qml.draw_mpl(circuit, style="pennylane", decimals=2)(np.array([A, B, C]))
         axes = ax if hasattr(ax, "__iter__") else [ax]
-        fig.patch.set_facecolor(_BG)
+        fig.patch.set_facecolor("white")
         for a in axes:
-            a.set_facecolor(_BG2)
-            a.tick_params(colors=_TEXT)
-            for spine in a.spines.values():
-                spine.set_edgecolor(_CYAN)
+            a.set_facecolor("white")
+            a.tick_params(colors="#222222")
             for txt in a.texts:
-                txt.set_color(_TEXT)
-            for line in a.lines:
-                line.set_color(_CYAN)
+                txt.set_color("#222222")
         fig.set_size_inches(7, 1.8)
         fig.tight_layout()
         return fig
