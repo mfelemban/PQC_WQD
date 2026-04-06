@@ -231,12 +231,19 @@ def draw_pqc(A, B, C):
     """
     try:
         circuit = _build_pqc()
-        fig, ax = qml.draw_mpl(circuit, style="black_white", decimals=2)(
-            np.array([A, B, C])
-        )
+        fig, ax = qml.draw_mpl(circuit, decimals=2)(np.array([A, B, C]))
+        # Apply dark theme to every axes object returned
+        axes = ax if hasattr(ax, "__iter__") else [ax]
         fig.patch.set_facecolor(_BG)
-        for a in (ax if hasattr(ax, "__iter__") else [ax]):
+        for a in axes:
             a.set_facecolor(_BG2)
+            a.tick_params(colors=_TEXT)
+            for spine in a.spines.values():
+                spine.set_edgecolor(_CYAN)
+            for txt in a.texts:
+                txt.set_color(_TEXT)
+            for line in a.lines:
+                line.set_color(_CYAN)
         fig.set_size_inches(7, 1.8)
         fig.tight_layout()
         return fig
@@ -816,25 +823,25 @@ def slide3():
     </div>""", unsafe_allow_html=True)
 
     # ── Match Meter (full-width, always at top) ───────────────────────────────
-    mc = ("#C62828" if pct < 40 else "#FB8C00" if pct < 75
-          else "#2E7D32" if pct < 98 else "#1565C0")
+    mc = ("#ff5064" if pct < 40 else "#ffb400" if pct < 75
+          else "#00dc82" if pct < 98 else "#00d4e8")
     msg = ("🔴 Keep trying — you're far off!"      if pct < 40  else
            "🟠 Getting warmer — keep adjusting."   if pct < 75  else
            "🟢 So close!  Fine-tune carefully."    if pct < 98  else
            "⭐ PERFECT MATCH — you did it!")
 
     st.markdown(f"""
-    <div class="meter" style="background:#f5f5f5;border:2px solid {mc};">
+    <div class="meter" style="background:rgba(0,212,232,0.06);border:2px solid {mc};">
       <div style="display:flex;justify-content:space-between;align-items:center;
                   margin-bottom:.3rem;">
         <span style="font-weight:700;font-size:1.1rem;">🎯 Match Meter</span>
         <span style="font-size:1.5rem;font-weight:800;color:{mc};">{pct:.1f}%</span>
       </div>
-      <div style="background:#ddd;border-radius:8px;height:26px;overflow:hidden;">
+      <div style="background:rgba(255,255,255,0.12);border-radius:8px;height:26px;overflow:hidden;">
         <div style="background:{mc};width:{min(pct,100):.2f}%;height:100%;
                     border-radius:8px;"></div>
       </div>
-      <div style="font-size:.88rem;color:#555;margin-top:.3rem;">{msg}</div>
+      <div style="font-size:.88rem;color:#80c8d8;margin-top:.3rem;">{msg}</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -913,10 +920,7 @@ def slide3():
             st.plotly_chart(fig_progress_1d(fid), use_container_width=True)
 
         st.markdown("**Your Circuit** *(parameterized by Angle A, B, C)*")
-        pqc_fig3 = draw_pqc(A, B, C)
-        if pqc_fig3 is not None:
-            st.pyplot(pqc_fig3, use_container_width=True)
-            plt.close(pqc_fig3)
+        st.plotly_chart(fig_circuit(A, B, C), use_container_width=True)
 
         with st.expander("🔬 Advanced: complex amplitudes & target angles"):
             curr = psi3(A, B, C)
