@@ -86,41 +86,44 @@ def fidelity(a, b):
     """Quantum fidelity |⟨a|b⟩|²."""
     return float(abs(np.vdot(a, b)) ** 2)
 
-# ── Slide 2: 2-qubit Bell-state loss landscape ────────────────────────────────
+# ── Slide 2: 1D pedagogical loss landscape ───────────────────────────────────
 
-def _bell_fidelity(t1, t2):
+def _loss_1d(x):
     """
-    Fidelity of |ψ(t1,t2)⟩ = CNOT · [RY(t1)⊗RY(t2)] |00⟩  with  |Φ+⟩.
-    Analytically: F = cos²(t2/2) · (cos(t1/2) + sin(t1/2))² / 2
-    Global max at t1=π/2, t2=0 (and periodically elsewhere).
+    Simple 1-parameter loss with 3 local minima and 1 clear global minimum.
+    Built from Gaussian wells so the gradient is smooth everywhere.
+      Global min ≈ 0.15  at x ≈ 3.5
+      Local  min ≈ 0.55  at x ≈ 1.6
+      Local  min ≈ 0.50  at x ≈ 6.2   ← optimizer gets stuck here
+      Local  min ≈ 0.60  at x ≈ 8.8
+    Domain: x ∈ [0, 10]
     """
-    return np.clip(
-        (np.cos(t2 / 2) ** 2) * (np.cos(t1 / 2) + np.sin(t1 / 2)) ** 2 / 2,
-        0.0, 1.0,
+    return (
+        1.0
+        - 0.45 * np.exp(-0.5 * ((x - 1.6) / 0.55) ** 2)   # local
+        - 0.85 * np.exp(-0.5 * ((x - 3.5) / 0.65) ** 2)   # GLOBAL
+        - 0.50 * np.exp(-0.5 * ((x - 6.2) / 0.60) ** 2)   # local
+        - 0.40 * np.exp(-0.5 * ((x - 8.8) / 0.50) ** 2)   # local
     )
 
 @st.cache_data(show_spinner=False)
-def _landscape_data():
-    """Pre-compute landscape grid and gradient-ascent path (cached once)."""
-    N = 80
-    t1 = np.linspace(0, 2 * np.pi, N)
-    t2 = np.linspace(0, 2 * np.pi, N)
-    T1, T2 = np.meshgrid(t1, t2)
-    Z_loss = 1.0 - _bell_fidelity(T1, T2)
+def _precompute_1d():
+    """Curve + gradient-descent path that falls into a local minimum."""
+    xs = np.linspace(0, 10, 600)
+    ys = _loss_1d(xs)
 
-    # Gradient ascent on fidelity from a high-loss starting point
-    p1, p2 = 5.0, 5.2
-    lr, h  = 0.18, 1e-4
-    path1, path2 = [p1], [p2]
-    for _ in range(60):
-        f0 = _bell_fidelity(p1, p2)
-        g1 = (_bell_fidelity(p1 + h, p2) - f0) / h
-        g2 = (_bell_fidelity(p1, p2 + h) - f0) / h
-        p1 = float(np.clip(p1 + lr * g1, 0.0, 2 * np.pi))
-        p2 = float(np.clip(p2 + lr * g2, 0.0, 2 * np.pi))
-        path1.append(p1)
-        path2.append(p2)
-    return t1, t2, Z_loss, np.array(path1), np.array(path2)
+    # Gradient descent from x=7.5 → converges to local min at ~6.2
+    h  = 1e-5
+    lr = 0.12
+    x  = 7.5
+    px, py = [x], [float(_loss_1d(x))]
+    for _ in range(70):
+        grad = (_loss_1d(x + h) - _loss_1d(x - h)) / (2 * h)
+        x    = float(np.clip(x - lr * grad, 0.0, 10.0))
+        px.append(x)
+        py.append(float(_loss_1d(x)))
+
+    return xs, ys, np.array(px), np.array(py)
 
 # ── Slide 3: target state ─────────────────────────────────────────────────────
 
@@ -270,123 +273,118 @@ def fig_probs(state, title="Probability of measuring each basis state"):
 
 
 @st.cache_data(show_spinner=False)
-def fig_landscape():
+def fig_loss_1d_animated():
     """
-    Animated loss landscape for slide 2.
-    Built once and cached; animation runs fully client-side via Plotly frames.
+    Animated 1D loss landscape for slide 2.
+    The red dot starts at θ=7.5 and gradient-descends into a LOCAL minimum
+    at θ≈6.2, visibly missing the ⭐ global minimum at θ≈3.5.
+    Animation runs fully client-side via Plotly frames.
     """
-    t1v, t2v, Z, path1, path2 = _landscape_data()
+    xs, ys, path_x, path_y = _precompute_1d()
 
-    # ── Static base traces ────────────────────────────────────────────────────
-    heatmap = go.Heatmap(
-        x=t1v, y=t2v, z=Z,
-        colorscale="RdYlGn_r", zmin=0, zmax=1,
-        colorbar=dict(title="Loss", thickness=12, len=0.7, tickformat=".1f"),
-        hovertemplate="θ₁=%{x:.2f}<br>θ₂=%{y:.2f}<br>Loss=%{z:.3f}<extra></extra>",
+    # ── Static traces ─────────────────────────────────────────────────────────
+    curve = go.Scatter(
+        x=xs, y=ys, mode="lines",
+        fill="tozeroy", fillcolor="rgba(21,101,192,0.10)",
+        line=dict(color="#1565C0", width=2.5),
+        name="Loss curve", hoverinfo="skip",
     )
-    contour = go.Contour(
-        x=t1v, y=t2v, z=Z, ncontours=10, showscale=False,
-        contours_coloring="none",
-        line=dict(color="rgba(255,255,255,0.45)", width=0.8),
+    # Global minimum marker
+    x_gmin = xs[np.argmin(ys)]
+    y_gmin = float(np.min(ys))
+    gmin = go.Scatter(
+        x=[x_gmin], y=[y_gmin], mode="markers+text",
+        marker=dict(size=22, color="#FFD600", symbol="star",
+                    line=dict(color="#555", width=1.5)),
+        text=["  ⭐ Global Min"], textposition="middle right",
+        name="Global minimum", showlegend=True, hoverinfo="skip",
     )
-    optimum = go.Scatter(
-        x=[np.pi / 2], y=[0.0],
-        mode="markers+text",
-        marker=dict(size=20, color="#FFD600", symbol="star",
-                    line=dict(color="#333", width=1.5)),
-        text=["  ⭐ Optimum"], textposition="middle right",
+    # Local minimum annotation where dot gets stuck
+    stuck_x, stuck_y = 6.2, float(_loss_1d(6.2))
+    stuck = go.Scatter(
+        x=[stuck_x], y=[stuck_y + 0.06], mode="text",
+        text=["⚠️ Local Min<br>(optimizer stuck)"],
+        textfont=dict(size=11, color="#C62828"),
         showlegend=False, hoverinfo="skip",
     )
-    # Initial animated traces (step 0)
-    init_path = go.Scatter(
-        x=[path1[0]], y=[path2[0]], mode="lines",
-        line=dict(color="white", width=2.5, dash="dash"),
+    # Initial animated traces
+    init_trail = go.Scatter(
+        x=[path_x[0]], y=[path_y[0]], mode="markers",
+        marker=dict(size=7, color="#E53935", opacity=0.5),
         showlegend=False, hoverinfo="skip",
     )
     init_dot = go.Scatter(
-        x=[path1[0]], y=[path2[0]], mode="markers",
-        marker=dict(size=17, color="white", symbol="circle",
-                    line=dict(color="#1565C0", width=3)),
-        name="Optimizer", showlegend=True,
-        hovertemplate=f"θ₁={path1[0]:.2f}, θ₂={path2[0]:.2f}"
-                      f"<br>Loss={1-_bell_fidelity(path1[0],path2[0]):.4f}<extra></extra>",
+        x=[path_x[0]], y=[path_y[0]], mode="markers",
+        marker=dict(size=18, color="#E53935", symbol="circle",
+                    line=dict(color="white", width=2.5)),
+        name="🔴 Optimizer", showlegend=True,
+        hovertemplate="Step 0<br>θ = %{x:.3f}<br>Loss = %{y:.4f}<extra></extra>",
     )
 
     # ── Animation frames (update only traces 3 and 4) ─────────────────────────
     frames = []
-    for k in range(len(path1)):
-        loss_k = 1 - _bell_fidelity(path1[k], path2[k])
+    for k in range(len(path_x)):
         frames.append(go.Frame(
             data=[
-                go.Scatter(x=path1[:k+1], y=path2[:k+1], mode="lines",
-                           line=dict(color="white", width=2.5, dash="dash"),
-                           showlegend=False, hoverinfo="skip"),
+                # Trail: all visited positions so far
                 go.Scatter(
-                    x=[path1[k]], y=[path2[k]], mode="markers",
-                    marker=dict(size=17, color="white", symbol="circle",
-                                line=dict(color="#1565C0", width=3)),
-                    name="Optimizer",
-                    hovertemplate=f"Step {k}<br>θ₁={path1[k]:.2f}, "
-                                  f"θ₂={path2[k]:.2f}<br>"
-                                  f"Loss={loss_k:.4f}<extra></extra>"),
+                    x=path_x[:k+1], y=path_y[:k+1], mode="markers",
+                    marker=dict(size=6, color="#E53935", opacity=0.35),
+                    showlegend=False, hoverinfo="skip",
+                ),
+                # Current position dot
+                go.Scatter(
+                    x=[path_x[k]], y=[path_y[k]], mode="markers",
+                    marker=dict(size=18, color="#E53935", symbol="circle",
+                                line=dict(color="white", width=2.5)),
+                    name="🔴 Optimizer",
+                    hovertemplate=(f"Step {k}<br>θ = {path_x[k]:.3f}"
+                                   f"<br>Loss = {path_y[k]:.4f}<extra></extra>"),
+                ),
             ],
             traces=[3, 4],
             name=str(k),
         ))
 
     fig = go.Figure(
-        data=[heatmap, contour, optimum, init_path, init_dot],
+        data=[curve, gmin, stuck, init_trail, init_dot],
         frames=frames,
     )
 
-    pi_ticks = dict(
-        tickvals=[0, np.pi/2, np.pi, 3*np.pi/2, 2*np.pi],
-        ticktext=["0", "π/2", "π", "3π/2", "2π"],
-    )
     fig.update_layout(
-        height=440,
-        margin=dict(l=50, r=20, t=70, b=70),
-        xaxis=dict(title="θ₁  (Knob 1)", **pi_ticks),
-        yaxis=dict(title="θ₂  (Knob 2)", **pi_ticks),
-        title="Loss Landscape — 🔴 Red hills = bad,  🟢 Green valleys = good",
-        paper_bgcolor="white",
-        legend=dict(orientation="h", y=1.12, x=0.5, xanchor="center"),
-        # Play / Pause buttons
+        height=420,
+        margin=dict(l=60, r=30, t=75, b=70),
+        xaxis=dict(title="θ  (Parameter — your knob setting)",
+                   range=[-0.3, 10.3], showgrid=True, gridcolor="#eee"),
+        yaxis=dict(title="Loss  (lower = better)",
+                   range=[-0.05, 1.15], showgrid=True, gridcolor="#eee"),
+        title="Loss Landscape — the optimizer rolls downhill, but where does it end up?",
+        paper_bgcolor="white", plot_bgcolor="white",
+        legend=dict(orientation="h", y=1.13, x=0.5, xanchor="center"),
         updatemenus=[dict(
             type="buttons", showactive=False,
-            y=1.18, x=0.5, xanchor="center",
+            y=1.19, x=0.5, xanchor="center",
             buttons=[
-                dict(
-                    label="▶  Play Optimization",
-                    method="animate",
-                    args=[None, {
-                        "frame": {"duration": 140, "redraw": False},
-                        "transition": {"duration": 60, "easing": "linear"},
-                        "fromcurrent": True,
-                    }],
-                ),
-                dict(
-                    label="⏸  Pause",
-                    method="animate",
-                    args=[[None], {
-                        "frame": {"duration": 0},
-                        "mode": "immediate",
-                        "transition": {"duration": 0},
-                    }],
-                ),
+                dict(label="▶  Play",
+                     method="animate",
+                     args=[None, {"frame": {"duration": 120, "redraw": False},
+                                  "transition": {"duration": 40, "easing": "linear"},
+                                  "fromcurrent": True}]),
+                dict(label="⏸  Pause",
+                     method="animate",
+                     args=[[None], {"frame": {"duration": 0},
+                                    "mode": "immediate",
+                                    "transition": {"duration": 0}}]),
             ],
         )],
-        # Step scrubber slider
         sliders=[dict(
-            steps=[
-                dict(method="animate",
-                     args=[[str(k)],
-                           {"frame": {"duration": 0, "redraw": False},
-                            "mode": "immediate",
-                            "transition": {"duration": 0}}],
-                     label=str(k))
-                for k in range(len(path1))
-            ],
+            steps=[dict(method="animate",
+                        args=[[str(k)],
+                              {"frame": {"duration": 0, "redraw": False},
+                               "mode": "immediate",
+                               "transition": {"duration": 0}}],
+                        label=str(k))
+                   for k in range(len(path_x))],
             transition=dict(duration=0),
             x=0.05, y=-0.08, len=0.9,
             currentvalue=dict(prefix="Step: ", visible=True, xanchor="center"),
@@ -591,45 +589,49 @@ def slide2():
         st.markdown("**The loop repeats until the valley is found:**")
         st.markdown("""
         <div class="card cb" style="padding:0.5rem 0.8rem;">
-          <span class="bdg">1</span><b>Guess</b> — pick random θ₁, θ₂
+          <span class="bdg">1</span><b>Guess</b> — pick a random value for θ
         </div>
         <div class="card co" style="padding:0.5rem 0.8rem;">
           <span class="bdg" style="background:#FB8C00;">2</span>
-          <b>Measure</b> — run the quantum circuit, receive a Loss score
+          <b>Measure</b> — run the quantum circuit, get a Loss score
         </div>
         <div class="card cg" style="padding:0.5rem 0.8rem;">
           <span class="bdg" style="background:#2E7D32;">3</span>
-          <b>Adjust</b> — nudge θ₁ and θ₂ toward lower loss (gradient step)
+          <b>Adjust</b> — nudge θ downhill (one gradient step)
         </div>
         <div class="card cb" style="padding:0.5rem 0.8rem;">
           <span class="bdg" style="background:#6A1B9A;">4</span>
-          <b>Repeat</b> — loop until the valley is reached ✅
+          <b>Repeat</b> — keep going until the dot stops moving ✅
         </div>
         """, unsafe_allow_html=True)
 
         st.markdown("""
         <div class="card cb" style="margin-top:0.6rem;">
-          <b>🗺️ Reading the Map</b><br>
-          Each point = one pair of angle settings (θ₁, θ₂).<br>
-          <span style="color:#C62828;">● Red hills</span> = high loss (bad cookie 🍪)<br>
-          <span style="color:#2E7D32;">● Green valleys</span> = low loss (great cookie ✅)<br>
-          ⭐ = the global optimum — perfect Bell state!
+          <b>🗺️ Reading the Chart</b><br>
+          The x-axis is your single knob setting θ.<br>
+          The y-axis is the Loss — <b>lower is better</b>.<br>
+          The curve has <b>hills</b> (bad) and <b>valleys</b> (good).<br>
+          ⭐ marks the <em>deepest</em> valley — the global minimum.
         </div>
 
         <div class="card cr" style="margin-top:0.4rem;">
-          <b>⚠️ Beware: Local Minima!</b><br>
-          The optimizer can get <em>stuck in a shallow valley</em> and
-          miss the deepest one.  This is one of the central challenges
-          of training PQCs in the real world.
+          <b>⚠️ Watch what happens!</b><br>
+          The 🔴 dot starts on the right and rolls downhill —
+          but it falls into a <em>shallow valley</em> first and
+          <b>gets stuck</b>, never reaching ⭐.<br>
+          This is the <b>local minimum problem</b>: a core challenge
+          in training PQCs!
         </div>
         """, unsafe_allow_html=True)
 
     with right:
-        st.plotly_chart(fig_landscape(), use_container_width=True)
+        st.plotly_chart(fig_loss_1d_animated(), use_container_width=True)
         st.caption(
-            "The circuit here tries to prepare the Bell state |Φ+⟩ = (|00⟩+|11⟩)/√2 "
-            "using two RY gates and a CNOT.  Loss = 1 − Fidelity.  "
-            "Use the step slider to scrub through the optimization manually."
+            "The 🔴 dot is the optimizer following gradient descent — "
+            "at each step it moves in the direction that decreases Loss. "
+            "Notice it settles in the ⚠️ local minimum at θ≈6.2 "
+            "instead of the ⭐ global minimum at θ≈3.5. "
+            "Use the step slider to scrub through the path manually."
         )
 
 
