@@ -231,7 +231,7 @@ def draw_pqc(A, B, C):
     """
     try:
         circuit = _build_pqc()
-        fig, ax = qml.draw_mpl(circuit, decimals=2)(np.array([A, B, C]))
+        fig, ax = qml.draw_mpl(circuit, style="pennylane", decimals=2)(np.array([A, B, C]))
         # Apply dark theme to every axes object returned
         axes = ax if hasattr(ax, "__iter__") else [ax]
         fig.patch.set_facecolor(_BG)
@@ -920,7 +920,10 @@ def slide3():
             st.plotly_chart(fig_progress_1d(fid), use_container_width=True)
 
         st.markdown("**Your Circuit** *(parameterized by Angle A, B, C)*")
-        st.plotly_chart(fig_circuit(A, B, C), use_container_width=True)
+        pqc_fig3 = draw_pqc(A, B, C)
+        if pqc_fig3 is not None:
+            st.pyplot(pqc_fig3, use_container_width=True)
+            plt.close(pqc_fig3)
 
         with st.expander("🔬 Advanced: complex amplitudes & target angles"):
             curr = psi3(A, B, C)
