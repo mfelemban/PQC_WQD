@@ -455,7 +455,7 @@ def fig_progress_1d(fidelity_score):
         )
 
     fig.update_layout(
-        height=215,
+        height=260,
         margin=dict(l=50, r=20, t=35, b=35),
         xaxis=dict(title="θ", range=[-0.3, 10.3],
                    showgrid=True, gridcolor="#eee", zeroline=False),
@@ -501,11 +501,11 @@ def fig_waveform(A, B, C):
     ))
 
     fig.update_layout(
-        height=320,
-        margin=dict(l=30, r=20, t=50, b=40),
+        height=260,
+        margin=dict(l=30, r=20, t=45, b=35),
         yaxis=dict(range=[0, 1.05], title="Probability"),
         xaxis_title="Basis State",
-        legend=dict(orientation="h", y=1.14, x=0.5, xanchor="center"),
+        legend=dict(orientation="h", y=1.16, x=0.5, xanchor="center"),
         template="plotly_white",
         title="Match Your Wave to the Target!  (Orange = Target, Blue = Yours)",
     )
@@ -820,9 +820,11 @@ def slide3():
                 st.rerun()
 
     with right:
-        st.plotly_chart(fig_waveform(A, B, C), use_container_width=True)
-
-        st.plotly_chart(fig_progress_1d(fid), use_container_width=True)
+        w_col, p_col = st.columns(2, gap="small")
+        with w_col:
+            st.plotly_chart(fig_waveform(A, B, C), use_container_width=True)
+        with p_col:
+            st.plotly_chart(fig_progress_1d(fid), use_container_width=True)
 
         st.markdown("**Your Circuit** *(parameterized by Angle A, B, C)*")
         pqc_fig3 = draw_pqc(A, B, C)
