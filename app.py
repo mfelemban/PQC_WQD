@@ -36,30 +36,33 @@ st.markdown("""
       background-image:
           linear-gradient(rgba(0,212,232,0.035) 1px, transparent 1px),
           linear-gradient(90deg, rgba(0,212,232,0.035) 1px, transparent 1px);
-      background-size: 48px 48px;
+      background-size: clamp(32px, 4vw, 48px) clamp(32px, 4vw, 48px);
       font-family: 'Exo 2', sans-serif !important;
   }
   [data-testid="stMain"], section.main { background: transparent !important; }
 
   /* ── Compact viewport-fit layout ── */
   .block-container {
-      padding: 0.3rem 1.5rem 0.2rem !important;
+      padding: 0.3rem clamp(0.5rem, 2vw, 1.5rem) 0.2rem !important;
       max-width: 100% !important;
       overflow: hidden;
   }
   #MainMenu, header, footer { visibility: hidden; }
 
   /* ── Global text ── */
-  html, body, p, li, label, span, div { color: #e0f4f8 !important; }
+  html, body, p, li, label, span, div {
+      color: #e0f4f8 !important;
+      font-size: clamp(0.78rem, 1.1vw, 1rem);
+  }
 
   /* ── Slide header ── */
   .shdr { text-align: center; margin-bottom: 0.4rem; }
   .shdr h1 {
-      font-size: 1.55rem; font-weight: 700; margin: 0;
+      font-size: clamp(1.1rem, 2.2vw, 1.55rem); font-weight: 700; margin: 0;
       color: #00d4e8 !important;
-      text-shadow: 0 0 18px rgba(0,212,232,0.45);
+      text-shadow: 0 0 clamp(10px, 1.5vw, 18px) rgba(0,212,232,0.45);
   }
-  .shdr .sub { font-size: 0.85rem; color: #80c8d8 !important; margin-top: 0.1rem; }
+  .shdr .sub { font-size: clamp(0.7rem, 1vw, 0.85rem); color: #80c8d8 !important; margin-top: 0.1rem; }
 
   /* ── Info cards ── */
   .card { border-radius: 8px; padding: 0.5rem 0.8rem; margin-bottom: 0.38rem; }
@@ -70,8 +73,9 @@ st.markdown("""
 
   /* ── Step badge ── */
   .bdg { display: inline-block; background: #00d4e8; color: #061828;
-         border-radius: 50%; width: 22px; height: 22px; text-align: center;
-         line-height: 22px; font-weight: 700; font-size: .78rem; margin-right: 6px; }
+         border-radius: 50%; width: clamp(18px, 2vw, 22px); height: clamp(18px, 2vw, 22px);
+         text-align: center; line-height: clamp(18px, 2vw, 22px);
+         font-weight: 700; font-size: clamp(0.65rem, 0.9vw, 0.78rem); margin-right: 6px; }
 
   /* ── Match meter ── */
   .meter { border-radius: 10px; padding: 0.55rem 1rem; margin-bottom: 0.5rem; }
@@ -80,7 +84,7 @@ st.markdown("""
   .win { background: linear-gradient(135deg, #003d5c, #006644);
          border: 1px solid #00d4e8; color: #e0f4f8 !important;
          border-radius: 10px; padding: 0.7rem 1.2rem; text-align: center;
-         font-size: 0.92rem; margin-bottom: 0.55rem; }
+         font-size: clamp(0.8rem, 1.1vw, 0.92rem); margin-bottom: 0.55rem; }
 
   /* ── Navigation arrows ── */
   [data-testid="stButton"] > button {
@@ -89,9 +93,10 @@ st.markdown("""
       color: #00d4e8 !important;
       border-radius: 50% !important;
       padding: 0 !important;
-      width: 46px !important; height: 46px !important;
-      font-size: 1.3rem !important; font-weight: 700 !important;
-      line-height: 44px !important;
+      width: clamp(36px, 4vw, 46px) !important;
+      height: clamp(36px, 4vw, 46px) !important;
+      font-size: clamp(1rem, 1.5vw, 1.3rem) !important; font-weight: 700 !important;
+      line-height: clamp(34px, 3.8vw, 44px) !important;
       transition: all 0.2s ease !important;
   }
   [data-testid="stButton"] > button:hover {
@@ -114,9 +119,33 @@ st.markdown("""
 
   /* ── Dividers / captions ── */
   hr { border-color: rgba(0,212,232,0.18) !important; margin: 0.3rem 0 !important; }
-  [data-testid="stCaptionContainer"] { color: #5090a0 !important; font-size: 0.75rem !important; }
+  [data-testid="stCaptionContainer"] { color: #5090a0 !important; font-size: clamp(0.65rem, 0.9vw, 0.75rem) !important; }
   h1, h2, h3 { color: #00d4e8 !important; }
   b, strong { color: #b0e8f0 !important; }
+
+  /* ── Plotly chart containers: scale height with viewport ── */
+  [data-testid="stPlotlyChart"] > div { width: 100% !important; }
+
+  /* ── Responsive breakpoints ── */
+  @media (max-width: 768px) {
+      .block-container { padding: 0.2rem 0.4rem 0.2rem !important; }
+      .shdr h1 { font-size: 1rem; }
+      .card { padding: 0.4rem 0.6rem; font-size: 0.82rem; }
+      .meter { padding: 0.4rem 0.6rem; }
+      .win { padding: 0.5rem 0.8rem; font-size: 0.82rem; }
+      [data-testid="stHorizontalBlock"] {
+          flex-wrap: wrap !important;
+      }
+      [data-testid="stHorizontalBlock"] > [data-testid="stColumn"] {
+          min-width: 100% !important;
+          flex-basis: 100% !important;
+      }
+  }
+  @media (max-width: 480px) {
+      .shdr h1 { font-size: 0.9rem; }
+      .shdr .sub { font-size: 0.7rem; }
+      .card { padding: 0.3rem 0.5rem; font-size: 0.76rem; }
+  }
 </style>
 """, unsafe_allow_html=True)
 
@@ -128,6 +157,54 @@ _TEXT = "#e0f4f8"   # axis labels / text
 _GRID = "rgba(0,212,232,0.12)"  # grid lines
 _DARK = dict(paper_bgcolor=_BG, plot_bgcolor=_BG2,
              font=dict(color=_TEXT, size=11))
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  VIEWPORT-AWARE SCALING
+# ─────────────────────────────────────────────────────────────────────────────
+# Detect viewport dimensions via Streamlit's built-in JavaScript bridge.
+# We inject a tiny component once and cache the result in session_state.
+import streamlit.components.v1 as components
+
+_DEFAULT_VW, _DEFAULT_VH = 1200, 800  # fallback for first render
+
+if "viewport_w" not in st.session_state:
+    st.session_state["viewport_w"] = _DEFAULT_VW
+    st.session_state["viewport_h"] = _DEFAULT_VH
+
+# Inject a zero-height iframe to measure the viewport and send it back.
+components.html("""
+<script>
+(function() {
+    const w = window.innerWidth  || document.documentElement.clientWidth;
+    const h = window.innerHeight || document.documentElement.clientHeight;
+    const key_w = "viewport_w", key_v = w + "x" + h;
+    // Only post once per resize to avoid rerun storms
+    if (sessionStorage.getItem("__pqc_vp") !== key_v) {
+        sessionStorage.setItem("__pqc_vp", key_v);
+        // Use Streamlit's setComponentValue to push data back
+        window.parent.postMessage({type: "streamlit:setComponentValue",
+                                    value: {w: w, h: h}}, "*");
+    }
+})();
+</script>
+""", height=0)
+
+def _vh(frac):
+    """Convert a fraction of viewport height to pixels (clamped to sane range)."""
+    return max(120, int(st.session_state["viewport_h"] * frac))
+
+def _vw(frac):
+    """Convert a fraction of viewport width to pixels."""
+    return max(200, int(st.session_state["viewport_w"] * frac))
+
+def _font_scale():
+    """Return a font-size multiplier based on viewport width."""
+    vw = st.session_state["viewport_w"]
+    if vw < 600:
+        return 0.75
+    if vw < 900:
+        return 0.85
+    return 1.0
 
 # ─────────────────────────────────────────────────────────────────────────────
 #  QUANTUM MATH  (numpy only — no PennyLane needed, everything is instant)
@@ -240,7 +317,10 @@ def draw_pqc(A, B, C):
             a.tick_params(colors="#222222")
             for txt in a.texts:
                 txt.set_color("#222222")
-        fig.set_size_inches(7, 1.8)
+        vw = st.session_state.get("viewport_w", 1200)
+        fig_w = max(4, vw / 150)   # scale width with viewport
+        fig_h = max(1.2, fig_w * 0.26)
+        fig.set_size_inches(fig_w, fig_h)
         fig.tight_layout()
         return fig
     except Exception:
@@ -318,7 +398,7 @@ def fig_circuit(t1, t2, t3):
     fig = go.Figure(traces)
     fig.update_layout(
         shapes=shapes, annotations=annots,
-        height=185, margin=dict(l=10, r=10, t=24, b=8),
+        height=_vh(0.23), margin=dict(l=10, r=10, t=24, b=8),
         paper_bgcolor=_BG, plot_bgcolor=_BG2,
         xaxis=dict(range=[-0.2, 6.3], showgrid=False, zeroline=False,
                    showticklabels=False),
@@ -340,7 +420,7 @@ def fig_probs(state, title="Probability of measuring each basis state"):
         hovertemplate="%{x}: %{y:.3f}<extra></extra>",
     ))
     fig.update_layout(
-        title=title, height=165,
+        title=title, height=_vh(0.21),
         margin=dict(l=20, r=10, t=28, b=28),
         yaxis=dict(range=[0, 1.05], title="P", gridcolor=_GRID, zerolinecolor=_GRID),
         xaxis=dict(title="Basis state", gridcolor=_GRID),
@@ -429,7 +509,7 @@ def fig_loss_1d_animated():
     )
 
     fig.update_layout(
-        height=370,
+        height=_vh(0.46),
         margin=dict(l=60, r=30, t=70, b=65),
         xaxis=dict(title="θ  (Parameter — your knob setting)",
                    range=[-0.3, 10.3], showgrid=True, gridcolor=_GRID,
@@ -534,7 +614,7 @@ def fig_progress_1d(fidelity_score):
         )
 
     fig.update_layout(
-        height=210,
+        height=_vh(0.26),
         margin=dict(l=50, r=20, t=32, b=32),
         xaxis=dict(title="θ", range=[-0.3, 10.3],
                    showgrid=True, gridcolor=_GRID, zeroline=False),
@@ -580,7 +660,7 @@ def fig_waveform(A, B, C):
     ))
 
     fig.update_layout(
-        height=210,
+        height=_vh(0.26),
         margin=dict(l=30, r=20, t=40, b=30),
         yaxis=dict(range=[0, 1.05], title="Probability",
                    gridcolor=_GRID, zerolinecolor=_GRID),
@@ -833,7 +913,7 @@ def slide3():
         <span style="font-weight:700;font-size:1.1rem;">🎯 Match Meter</span>
         <span style="font-size:1.5rem;font-weight:800;color:{mc};">{pct:.1f}%</span>
       </div>
-      <div style="background:rgba(255,255,255,0.12);border-radius:8px;height:26px;overflow:hidden;">
+      <div style="background:rgba(255,255,255,0.12);border-radius:8px;height:clamp(18px,3vh,26px);overflow:hidden;">
         <div style="background:{mc};width:{min(pct,100):.2f}%;height:100%;
                     border-radius:8px;"></div>
       </div>
@@ -931,7 +1011,7 @@ def slide3():
                 x=_BASIS, y=curr.real,
                 name="Yours  Re(ψ)", marker_color="#1565C0", opacity=0.85))
             fig_adv.update_layout(
-                barmode="overlay", height=175,
+                barmode="overlay", height=_vh(0.22),
                 margin=dict(l=20, r=10, t=15, b=25),
                 legend=dict(orientation="h", y=1.1),
                 **_DARK,
